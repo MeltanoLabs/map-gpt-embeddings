@@ -2,8 +2,14 @@
 
 from __future__ import annotations
 
+import pickle
 from typing import Iterable
 
+from langchain.document_loaders import ReadTheDocsLoader
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores.base import VectorStore
+from langchain.vectorstores.faiss import FAISS
 from singer_sdk.streams import Stream
 
 
@@ -23,8 +29,22 @@ class KnowledgeBaseStream(Stream):
         Raises:
             NotImplementedError: If the implementation is TODO
         """
-        # TODO: Write logic to extract data from the upstream source.
-        # records = mysource.getall()
-        # for record in records:
-        #     yield record.to_dict()
-        raise NotImplementedError("The method is not yet implemented (TODO)")
+        for something in self.process_kb():
+            yield something
+
+    def process_kb(self) -> VectorStore:
+        """Process the KnowledgeBase."""
+        loader = ReadTheDocsLoader("sdk.meltano.com")
+        raw_documents = loader.load()
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200,
+        )
+        documents = text_splitter.split_documents(raw_documents)
+        embeddings = OpenAIEmbeddings()
+        vectorstore = FAISS.from_documents(documents, embeddings)
+
+        # # Save vectorstore
+        # with open("vectorstore.pkl", "wb") as f:
+        #     pickle.dump(vectorstore, f)
+        return vectorstore
