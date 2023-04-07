@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "MeltanoLabs-tap-knowledge-base-nlp-vectors"
+version = "0.0.1"
+description = "`tap-knowledge-base-nlp-vectors` is a Singer tap for KnowledgeBase, built with the Meltano Singer SDK."
+readme = "README.md"
+authors = ["AJ Steers, Meltano"]
+keywords = [
+    "ELT",
+    "KnowledgeBase",
+]
+license = "Apache 2.0"
+packages = [
+    { include = "tap_knowledge_base_nlp" },
+]
+
+[tool.poetry.dependencies]
+python = "<3.12,>=3.7.1"
+singer-sdk = { version="^0.23.0" }
+fs-s3fs = { version = "^1.1.1", optional = true }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.1"
+flake8 = "^5.0.4"
+darglint = "^1.8.1"
+black = "^23.1.0"
+pyupgrade = "^3.3.1"
+mypy = "^1.0.0"
+isort = "^5.11.5"
+singer-sdk = { version="^0.23.0", extras = ["testing"] }
+
+[tool.poetry.extras]
+s3 = ["fs-s3fs"]
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3 # Vertical Hanging Indent
+src_paths = "tap_knowledge_base_nlp"
+
+[tool.mypy]
+python_version = "3.9"
+warn_unused_configs = true
+
+[build-system]
+requires = ["poetry-core>=1.0.8"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+# CLI declaration
+tap-knowledge-base-nlp-vectors = 'tap_knowledge_base_nlp.tap:TapKnowledgeBase.cli'
