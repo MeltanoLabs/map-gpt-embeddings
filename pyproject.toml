@@ -14,9 +14,10 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "<3.12,>=3.7.1"
+python = "<3.12,>=3.8.1"
 singer-sdk = { version="^0.23.0" }
 fs-s3fs = { version = "^1.1.1", optional = true }
+langchain = "^0.0.133"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.1"
