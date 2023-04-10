@@ -6,12 +6,12 @@ This library contains 3 distinct Singer tools for use in OpenAI models:
 1. `map-openai-doc-splitter` - Used for splitting documents into smaller chunks.
 1. `map-openai-embeddings` - Splits documents and _also_ calculates Embeddings using the OpenAI Embeddings API.
 
+Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
+
 ## See also
 
 1. https://github.com/aaronsteers/target-chroma - A Singer target that can be used to load documents and embeddings created by this library.
 1. https://github.com/aaronsteers/openai-ext - A Meltano utility which can be used to chat with the documents after they are loaded into the vector store. 
-
-Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
 ## Prereqs
 
