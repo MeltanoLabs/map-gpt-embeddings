@@ -4,6 +4,15 @@
 
 Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
+## Prereqs
+
+Before using this tap for ReadTheDocs, you first need to download the site locally using wget:
+
+```console
+% MY_RTD_SITE=sdk.meltano.com
+% wget -r -A.html https://${MY_RTD_SITE}/en/latest/
+```
+
 <!--
 
 Developer TODO: Update the below as needed to correctly describe the install procedure. For instance, if you do not have a PyPi repo, or if you want users to directly install from your git repo, you can modify this step as appropriate.
@@ -82,8 +91,8 @@ poetry install
 
 ### Create and Run Tests
 
-Create tests within the `tap_knowledge_base_nlp/tests` subfolder and
-  then run:
+Create tests within the `singer_openai/tests` subfolder and
+then run:
 
 ```bash
 poetry run pytest

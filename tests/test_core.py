@@ -2,10 +2,8 @@
 
 import datetime
 
+from singer_openai.tap import TapKnowledgeBase
 from singer_sdk.testing import get_tap_test_class
-
-from tap_knowledge_base_nlp.tap import TapKnowledgeBase
-
 
 SAMPLE_CONFIG = {
     "start_date": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
@@ -15,8 +13,7 @@ SAMPLE_CONFIG = {
 
 # Run standard built-in tap tests from the SDK:
 TestTapKnowledgeBase = get_tap_test_class(
-    tap_class=TapKnowledgeBase,
-    config=SAMPLE_CONFIG
+    tap_class=TapKnowledgeBase, config=SAMPLE_CONFIG
 )
 
 

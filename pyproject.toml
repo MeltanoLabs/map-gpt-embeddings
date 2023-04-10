@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "MeltanoLabs-tap-knowledge-base-nlp-vectors"
+name = "MeltanoLabs-singer-openai"
 version = "0.0.1"
-description = "`tap-knowledge-base-nlp-vectors` is a Singer tap for KnowledgeBase, built with the Meltano Singer SDK."
+description = "`singer-openai` is a Singer library for Open AI, built with the Meltano Singer SDK."
 readme = "README.md"
 authors = ["AJ Steers, Meltano"]
 keywords = [
@@ -10,15 +10,16 @@ keywords = [
 ]
 license = "Apache 2.0"
 packages = [
-    { include = "tap_knowledge_base_nlp" },
+    { include = "singer_openai" },
 ]
 
 [tool.poetry.dependencies]
 python = "<3.12,>=3.8.1"
 singer-sdk = { version="^0.23.0" }
 fs-s3fs = { version = "^1.1.1", optional = true }
-langchain = "^0.0.133"
+beautifulsoup4 = "^4.12.1"
 openai = "^0.27.4"
+langchain = "^0.0.133"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.1"
@@ -36,7 +37,7 @@ s3 = ["fs-s3fs"]
 [tool.isort]
 profile = "black"
 multi_line_output = 3 # Vertical Hanging Indent
-src_paths = "tap_knowledge_base_nlp"
+src_paths = "singer_openai"
 
 [tool.mypy]
 python_version = "3.9"
@@ -48,4 +49,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 # CLI declaration
-tap-knowledge-base-nlp-vectors = 'tap_knowledge_base_nlp.tap:TapKnowledgeBase.cli'
+tap-openai-kb = 'singer_openai.tap:TapOpenAIDocuments.cli'
+map-openai-doc-splitter = 'singer_openai.mappers:DocumentSplitMapper.cli'
+map-openai-embeddings = 'singer_openai.mappers:DocumentEmbeddingMapper.cli'

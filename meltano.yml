@@ -7,7 +7,7 @@ environments:
 plugins:
   extractors:
   - name: "tap-knowledge-base-nlp-vectors"
-    namespace: "tap_knowledge_base_nlp"
+    namespace: "singer_openai"
     pip_url: -e .
     capabilities:
     - state
