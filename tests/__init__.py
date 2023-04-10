@@ -1,1 +1,1 @@
-"""Test suite for tap-knowledge-base-nlp-vectors."""
+"""Test suite for map-gpt-embeddings."""

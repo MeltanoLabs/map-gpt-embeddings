@@ -1,17 +1,14 @@
-# singer-openai
+# `map-gpt-embeddings` Singer Map Transformer
 
-This library contains 3 distinct Singer tools for use in OpenAI models:
-
-1. `tap-openai-documents` - Used for scraping document text which can feed into long-term memory (vectorstore) for an OpenAI model.
-1. `map-openai-doc-splitter` - Used for splitting documents into smaller chunks.
-1. `map-openai-embeddings` - Splits documents and _also_ calculates Embeddings using the OpenAI Embeddings API.
+Inline mapper for splitting documents and calculating OpenAI embeddings, for purposes of building vectorstore knowledge base usable by GPT and ChatGPT.
 
 Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
 ## See also
 
-1. https://github.com/aaronsteers/target-chroma - A Singer target that can be used to load documents and embeddings created by this library.
-1. https://github.com/aaronsteers/openai-ext - A Meltano utility which can be used to chat with the documents after they are loaded into the vector store. 
+1. https://github.com/meltanolabs/tap-beautifulsoup - [Coming soon!] A tap for scraping web content from ReadTheDocs and other websites.
+1. https://github.com/meltanolabs/target-chromadb - A Singer target that can be used to load documents and embeddings created by this library.
+1. https://github.com/meltanolabs/gpt-ext - A Meltano utility which can be used to chat with the documents after they are loaded into the vector store.
 
 ## Prereqs
 
@@ -31,13 +28,13 @@ Developer TODO: Update the below as needed to correctly describe the install pro
 Install from PyPi:
 
 ```bash
-pipx install tap-knowledge-base-nlp-vectors
+pipx install map-gpt-embeddings
 ```
 
 Install from GitHub:
 
 ```bash
-pipx install git+https://github.com/ORG_NAME/tap-knowledge-base-nlp-vectors.git@main
+pipx install git+https://github.com/ORG_NAME/map-gpt-embeddings.git@main
 ```
 
 -->
@@ -52,7 +49,7 @@ Developer TODO: Provide a list of config options accepted by the tap.
 This section can be created by copy-pasting the CLI output from:
 
 ```
-tap-knowledge-base-nlp-vectors --about --format=markdown
+map-gpt-embeddings --about --format=markdown
 ```
 -->
 
@@ -60,7 +57,7 @@ A full list of supported settings and capabilities for this
 tap is available by running:
 
 ```bash
-tap-knowledge-base-nlp-vectors --about
+map-gpt-embeddings --about
 ```
 
 ### Configure using environment variables
@@ -69,22 +66,20 @@ This Singer tap will automatically import any environment variables within the w
 `.env` if the `--config=ENV` is provided, such that config values will be considered if a matching
 environment variable is set either in the terminal context or in the `.env` file.
 
-### Source Authentication and Authorization
+### OpenAI Authentication and Authorization
 
-<!--
-Developer TODO: If your tap requires special access on the source system, or any special authentication requirements, provide those here.
--->
+You will need an OpenAI API Key to calculate embeddings using OpenAI's models. Free accounts are rate limited to 60 calls per minute. This is different from ChatGPT Plus account and requires a per-API call billing method established with OpenAI.
 
 ## Usage
 
-You can easily run `tap-knowledge-base-nlp-vectors` by itself or in a pipeline using [Meltano](https://meltano.com/).
+You can easily run `map-gpt-embeddings` by itself or in a pipeline using [Meltano](https://meltano.com/).
 
 ### Executing the Tap Directly
 
 ```bash
-tap-knowledge-base-nlp-vectors --version
-tap-knowledge-base-nlp-vectors --help
-tap-knowledge-base-nlp-vectors --config CONFIG --discover > ./catalog.json
+map-gpt-embeddings --version
+map-gpt-embeddings --help
+map-gpt-embeddings --config CONFIG --discover > ./catalog.json
 ```
 
 ## Developer Resources
@@ -107,10 +102,10 @@ then run:
 poetry run pytest
 ```
 
-You can also test the `tap-knowledge-base-nlp-vectors` CLI interface directly using `poetry run`:
+You can also test the `map-gpt-embeddings` CLI interface directly using `poetry run`:
 
 ```bash
-poetry run tap-knowledge-base-nlp-vectors --help
+poetry run map-gpt-embeddings --help
 ```
 
 ### Testing with [Meltano](https://www.meltano.com)
@@ -130,7 +125,7 @@ Next, install Meltano (if you haven't already) and any needed plugins:
 # Install meltano
 pipx install meltano
 # Initialize meltano within this directory
-cd tap-knowledge-base-nlp-vectors
+cd map-gpt-embeddings
 meltano install
 ```
 
@@ -138,9 +133,9 @@ Now you can test and orchestrate using Meltano:
 
 ```bash
 # Test invocation:
-meltano invoke tap-knowledge-base-nlp-vectors --version
+meltano invoke map-gpt-embeddings --version
 # OR run a test `elt` pipeline:
-meltano elt tap-knowledge-base-nlp-vectors target-jsonl
+meltano elt map-gpt-embeddings target-jsonl
 ```
 
 ### SDK Dev Guide
