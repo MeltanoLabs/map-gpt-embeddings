@@ -1,3 +1,4 @@
+import os
 import typing as t
 
 import openai
@@ -35,11 +36,39 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         th.Property(
             "openai_api_key",
             th.StringType,
-            required=True,
             secret=True,
-            description="OpenAI API key",
+            description="OpenAI API key. Optional if `OPENAI_API_KEY` env var is set.",
         ),
     ).to_dict()
+
+    def _validate_config(
+        self,
+        raise_errors: bool = True,
+        warnings_as_errors: bool = False,
+    ) -> tuple[list[str], list[str]]:
+        """Validate configuration input against the plugin configuration JSON schema.
+
+        Args:
+            raise_errors: Flag to throw an exception if any validation errors are found.
+            warnings_as_errors: Flag to throw an exception if any warnings were emitted.
+
+        Returns:
+            A tuple of configuration validation warnings and errors.
+
+        Raises:
+            ConfigValidationError: If raise_errors is True and validation fails.
+        """
+        super()._validate_config(raise_errors, warnings_as_errors)
+        if (
+            raise_errors
+            and self.config.get("openai_api_key", None) is None
+            and "OPENAI_API_KEY" not in os.environ
+        ):
+            raise exceptions.ConfigValidationError(
+                "Must set at least one of the following: `openai_api_key` setting, "
+                f"`{self.name.upper().replace('-', '_')}_OPEN_API_KEY` env var, or "
+                " `OPENAI_API_KEY` env var."
+            )
 
     def split_record(self, record: dict) -> t.Iterable[dict]:
         """Split a record dict to zero or more record dicts.
