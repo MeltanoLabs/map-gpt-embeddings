@@ -23,7 +23,8 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         for result in t.cast(
             t.Iterable[SchemaMessage], super().map_schema_message(message_dict)
         ):
-            result.schema["properties"]["encodings"] = th.ArrayType(
+            # Add an "embeddings" property to the schema
+            result.schema["properties"]["embeddings"] = th.ArrayType(
                 th.NumberType
             ).to_dict()
             yield result
