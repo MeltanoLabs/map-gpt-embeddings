@@ -5,7 +5,7 @@ from __future__ import annotations
 from singer_sdk import Tap
 from singer_sdk import typing as th  # JSON schema typing helpers
 
-from singer_openai import streams
+from map_gpt_embeddings import streams
 
 
 class TapOpenAIDocuments(Tap):

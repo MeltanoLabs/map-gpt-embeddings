@@ -7,7 +7,7 @@ environments:
 plugins:
   extractors:
   - name: "map-gpt-embeddings"
-    namespace: "singer_openai"
+    namespace: "map_gpt_embeddings"
     pip_url: -e .
     capabilities:
     - state

@@ -95,7 +95,7 @@ poetry install
 
 ### Create and Run Tests
 
-Create tests within the `singer_openai/tests` subfolder and
+Create tests within the `map_gpt_embeddings/tests` subfolder and
 then run:
 
 ```bash

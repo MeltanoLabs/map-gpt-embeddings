@@ -10,7 +10,7 @@ keywords = [
 ]
 license = "Apache 2.0"
 packages = [
-    { include = "singer_openai" },
+    { include = "map_gpt_embeddings" },
 ]
 
 [tool.poetry.dependencies]
@@ -37,7 +37,7 @@ s3 = ["fs-s3fs"]
 [tool.isort]
 profile = "black"
 multi_line_output = 3 # Vertical Hanging Indent
-src_paths = "singer_openai"
+src_paths = "map_gpt_embeddings"
 
 [tool.mypy]
 python_version = "3.9"
@@ -49,6 +49,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 # CLI declaration
-tap-openai-kb = 'singer_openai.tap:TapOpenAIDocuments.cli'
-map-openai-doc-splitter = 'singer_openai.mappers:DocumentSplitMapper.cli'
-map-openai-embeddings = 'singer_openai.mappers:DocumentEmbeddingMapper.cli'
+tap-openai-kb = 'map_gpt_embeddings.tap:TapOpenAIDocuments.cli'
+map-openai-doc-splitter = 'map_gpt_embeddings.mappers:DocumentSplitMapper.cli'
+map-openai-embeddings = 'map_gpt_embeddings.mappers:DocumentEmbeddingMapper.cli'

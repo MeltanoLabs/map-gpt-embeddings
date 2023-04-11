@@ -2,8 +2,9 @@
 
 import datetime
 
-from singer_openai.tap import TapKnowledgeBase
 from singer_sdk.testing import get_tap_test_class
+
+from map_gpt_embeddings.tap import TapKnowledgeBase
 
 SAMPLE_CONFIG = {
     "start_date": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")

@@ -5,9 +5,10 @@ from __future__ import annotations
 import typing as t
 
 from langchain.docstore.document import Document
-from singer_openai.documents_parser import CustomReadTheDocsLoader
 from singer_sdk import typing as th  # JSON schema typing helpers
 from singer_sdk.streams import Stream
+
+from map_gpt_embeddings.documents_parser import CustomReadTheDocsLoader
 
 if t.TYPE_CHECKING:
     from singer_sdk.plugin_base import PluginBase as TapBaseClass
