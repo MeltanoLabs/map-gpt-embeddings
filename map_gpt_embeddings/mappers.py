@@ -160,7 +160,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
                 split_record["embeddings"] = self.get_embeddings(
                     text=split_record[self.config["document_text_property"]],
                     model="text-embedding-ada-002",
-                    api_key=self.config["openai_api_key"],
+                    api_key=self.config.get("openai_api_key", None),
                 )
             except openai.error.RateLimitError as ex:
                 raise exceptions.AbortedSyncFailedException(
