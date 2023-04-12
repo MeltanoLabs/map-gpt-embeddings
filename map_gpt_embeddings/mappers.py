@@ -31,8 +31,16 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             yield result
 
     config_jsonschema = th.PropertiesList(
-        th.Property("document_text_property", th.StringType, default="page_content"),
-        th.Property("document_metadata_property", th.StringType, default="metadata"),
+        th.Property(
+            "document_text_property",
+            th.StringType,
+            default="page_content",
+        ),
+        th.Property(
+            "document_metadata_property",
+            th.StringType,
+            default="metadata",
+        ),
         th.Property(
             "openai_api_key",
             th.StringType,
