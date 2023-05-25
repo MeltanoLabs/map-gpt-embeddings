@@ -6,10 +6,7 @@ from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from singer_sdk import exceptions
 from singer_sdk import typing as th
-from singer_sdk._singerlib.messages import (
-    Message,
-    SchemaMessage,
-)
+from singer_sdk._singerlib.messages import Message, SchemaMessage
 
 from map_gpt_embeddings.sdk_fixes.mapper_base import BasicPassthroughMapper
 from map_gpt_embeddings.sdk_fixes.messages import RecordMessage
