@@ -63,17 +63,22 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         Raises:
             ConfigValidationError: If raise_errors is True and validation fails.
         """
-        super()._validate_config(raise_errors, warnings_as_errors)
+        [warnings, errors] = super()._validate_config(raise_errors, warnings_as_errors)
         if (
-            raise_errors
-            and self.config.get("openai_api_key", None) is None
+            self.config.get("openai_api_key", None) is None
             and "OPENAI_API_KEY" not in os.environ
         ):
-            raise exceptions.ConfigValidationError(
+            apikey_config_error_message = (
                 "Must set at least one of the following: `openai_api_key` setting, "
                 f"`{self.name.upper().replace('-', '_')}_OPEN_API_KEY` env var, or "
                 " `OPENAI_API_KEY` env var."
             )
+            errors.append(apikey_config_error_message)
+
+            if raise_errors:
+                raise exceptions.ConfigValidationError(apikey_config_error_message)
+
+        return warnings, errors
 
     def split_record(self, record: dict) -> t.Iterable[dict]:
         """Split a record dict to zero or more record dicts.
@@ -88,7 +93,8 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         metadata_dict = record[self.config["document_metadata_property"]]
 
         if not self.config.get("split_documents", True):
-            return record
+            yield record
+            return
 
         splitter_config = self.config.get("splitter_config", {})
         if "chunk_size" not in splitter_config:
@@ -118,7 +124,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
     def get_embeddings(
         self, text: str, api_key: str, model="text-embedding-ada-002"
     ) -> list[float]:
-        """Gets embedding for a given text, using the OpenAPI Embeddings endpoint.
+        """Gets embedding for a given text, using the OpenAI Embeddings endpoint.
 
         https://platform.openai.com/docs/api-reference/embeddings/create
 
@@ -148,6 +154,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
 
         Args:
             text: The text to create embeddings for.
+            api_key: Then OpenAI API key
             model: The model to use. Defaults to "text-embedding-ada-002".
 
         Returns:
