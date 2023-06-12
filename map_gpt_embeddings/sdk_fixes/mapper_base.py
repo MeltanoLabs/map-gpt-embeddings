@@ -23,6 +23,9 @@ class BasicPassthroughMapper(InlineMapper):
 
         Args:
             message_dict: A SCHEMA message JSON dictionary.
+
+        Yields:
+            SchemaMessage
         """
         yield SchemaMessage.from_dict(message_dict)
 
@@ -31,6 +34,9 @@ class BasicPassthroughMapper(InlineMapper):
 
         Args:
             message_dict: A RECORD message JSON dictionary.
+
+        Yields:
+            RecordMessage
         """
         yield t.cast(RecordMessage, RecordMessage.from_dict(message_dict))
 
@@ -39,6 +45,9 @@ class BasicPassthroughMapper(InlineMapper):
 
         Args:
             message_dict: A STATE message JSON dictionary.
+
+        Yields:
+            StateMessage
         """
         yield StateMessage.from_dict(message_dict)
 
@@ -50,5 +59,8 @@ class BasicPassthroughMapper(InlineMapper):
 
         Args:
             message_dict: An ACTIVATE_VERSION message JSON dictionary.
+
+        Yields:
+            ActivateVersionMessage
         """
         yield ActivateVersionMessage.from_dict(message_dict)
