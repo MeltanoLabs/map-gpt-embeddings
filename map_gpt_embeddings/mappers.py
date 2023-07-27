@@ -9,50 +9,11 @@ from singer_sdk._singerlib.messages import (
     Message,
     SchemaMessage,
 )
-from singer_sdk.authenticators import BearerTokenAuthenticator
-from singer_sdk.streams import RESTStream
-from singer_sdk.tap_base import Tap
 
 from map_gpt_embeddings.sdk_fixes.mapper_base import BasicPassthroughMapper
 from map_gpt_embeddings.sdk_fixes.messages import RecordMessage
-
-
-class TapOpenAI(Tap):
-    """OpenAI tap class."""
-
-    name = "tap-openai"
-    def discover_streams(self):
-        return []
-
-class OpenAIStream(RESTStream):
-    name = "openai"
-    path = "/v1/embeddings"
-    rest_method = "POST"
-
-    @property
-    def http_headers(self) -> dict:
-        return {
-            "Content-Type": "application/json",
-        }
-    @property
-    def authenticator(self):
-        return BearerTokenAuthenticator(stream=self, token=self.config.get("openai_api_key"))
-    
-    @property
-    def url_base(self) -> str:
-        base_url = "https://api.openai.com"
-        return base_url
-    
-    def prepare_request_payload(
-        self,
-        context,
-        next_page_token,
-    ):
-        return {
-            "input": context["text"].replace("\n", " "),
-            "model": context["model"],
-        }
-
+from map_gpt_embeddings.tap import TapOpenAI
+from map_gpt_embeddings.stream import OpenAIStream
 
 class GPTEmbeddingMapper(BasicPassthroughMapper):
     """Split documents into segments, then vectorize."""
