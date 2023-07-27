@@ -1,7 +1,6 @@
 import os
 import typing as t
 
-import openai
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from singer_sdk import exceptions
@@ -10,15 +9,61 @@ from singer_sdk._singerlib.messages import (
     Message,
     SchemaMessage,
 )
+from singer_sdk.authenticators import BearerTokenAuthenticator
+from singer_sdk.streams import RESTStream
+from singer_sdk.tap_base import Tap
 
 from map_gpt_embeddings.sdk_fixes.mapper_base import BasicPassthroughMapper
 from map_gpt_embeddings.sdk_fixes.messages import RecordMessage
+
+
+class TapOpenAI(Tap):
+    """OpenAI tap class."""
+
+    name = "tap-openai"
+    def discover_streams(self):
+        return []
+
+class OpenAIStream(RESTStream):
+    name = "openai"
+    path = "/v1/embeddings"
+    rest_method = "POST"
+
+    @property
+    def http_headers(self) -> dict:
+        return {
+            "Content-Type": "application/json",
+        }
+    @property
+    def authenticator(self):
+        return BearerTokenAuthenticator(stream=self, token=self.config.get("openai_api_key"))
+    
+    @property
+    def url_base(self) -> str:
+        base_url = "https://api.openai.com"
+        return base_url
+    
+    def prepare_request_payload(
+        self,
+        context,
+        next_page_token,
+    ):
+        return {
+            "input": context["text"].replace("\n", " "),
+            "model": context["model"],
+        }
 
 
 class GPTEmbeddingMapper(BasicPassthroughMapper):
     """Split documents into segments, then vectorize."""
 
     name = "map-openai-embeddings"
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the mapper."""
+        super().__init__(*args, **kwargs)
+        self.tap = TapOpenAI(config=dict(self.config))
+        self.stream = None
 
     def map_schema_message(self, message_dict: dict) -> t.Iterable[Message]:
         for result in t.cast(
@@ -28,6 +73,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             result.schema["properties"]["embeddings"] = th.ArrayType(
                 th.NumberType
             ).to_dict()
+            self.stream = OpenAIStream(tap=self.tap, schema=result.schema)
             yield result
 
     config_jsonschema = th.PropertiesList(
@@ -118,64 +164,21 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             new_record[self.config["document_metadata_property"]] = doc_segment.metadata
             yield new_record
 
-    def get_embeddings(
-        self, text: str, api_key: str, model="text-embedding-ada-002"
-    ) -> list[float]:
-        """Gets embedding for a given text, using the OpenAPI Embeddings endpoint.
-
-        https://platform.openai.com/docs/api-reference/embeddings/create
-
-        Returns an object with the following shape:
-        ```
-        {
-            "object": "list",
-            "data": [
-                {
-                    "object": "embedding",
-                    "embedding": [  # <-- this is the embedding we want
-                        0.0023064255,
-                        -0.009327292,
-                        .... (1536 floats total for ada-002)
-                        -0.0028842222,
-                    ],
-                    "index": 0,
-                }
-            ],
-            "model": "text-embedding-ada-002",
-            "usage": {
-                "prompt_tokens": 8,
-                "total_tokens": 8,
-            }
-        }
-        ```
-
-        Args:
-            text: The text to create embeddings for.
-            model: The model to use. Defaults to "text-embedding-ada-002".
-
-        Returns:
-            A list of floats representing the embedding. 1536 floats for ada-002.
-        """
-        text = text.replace("\n", " ")
-        response_dict: dict = openai.Embedding.create(
-            input=[text], model=model, api_key=api_key
-        )
-        return response_dict["data"][0]["embedding"]
-
     def map_record_message(self, message_dict: dict) -> t.Iterable[RecordMessage]:
         for split_record in self.split_record(message_dict["record"]):
-            try:
-                split_record["embeddings"] = self.get_embeddings(
-                    text=split_record[self.config["document_text_property"]],
-                    model="text-embedding-ada-002",
-                    api_key=self.config.get("openai_api_key", None),
+            response_data = list(
+                self.stream.request_records(
+                    {
+                        "text": split_record[self.config["document_text_property"]],
+                        "model": "text-embedding-ada-002",
+                    }
                 )
-            except openai.error.RateLimitError as ex:
-                raise exceptions.AbortedSyncFailedException(
-                    "Sync aborted due to OpenAI rate limit reached. Error message:\n"
-                    + str(ex)
-                ) from ex
+            )
+            split_record["embeddings"] = response_data[0]["data"][0]["embedding"]
             new_message = message_dict.copy()
             new_message["record"] = split_record
 
             yield t.cast(RecordMessage, RecordMessage.from_dict(new_message))
+
+if __name__ == "__main__":
+    GPTEmbeddingMapper.cli()
