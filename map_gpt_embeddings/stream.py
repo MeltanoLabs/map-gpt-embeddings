@@ -14,18 +14,19 @@ class OpenAIStream(RESTStream):
         return {
             "Content-Type": "application/json",
         }
+
     @property
     def authenticator(self):
         return BearerTokenAuthenticator(
             stream=self,
-            token=self.config.get("openai_api_key", os.environ.get("OPENAI_API_KEY"))
+            token=self.config.get("openai_api_key", os.environ.get("OPENAI_API_KEY")),
         )
-    
+
     @property
     def url_base(self) -> str:
         base_url = "https://api.openai.com"
         return base_url
-    
+
     def prepare_request_payload(
         self,
         context,
