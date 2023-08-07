@@ -5,15 +5,13 @@ from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from singer_sdk import exceptions
 from singer_sdk import typing as th
-from singer_sdk._singerlib.messages import (
-    Message,
-    SchemaMessage,
-)
+from singer_sdk._singerlib.messages import Message, SchemaMessage
 
 from map_gpt_embeddings.sdk_fixes.mapper_base import BasicPassthroughMapper
 from map_gpt_embeddings.sdk_fixes.messages import RecordMessage
-from map_gpt_embeddings.tap import TapOpenAI
 from map_gpt_embeddings.stream import OpenAIStream
+from map_gpt_embeddings.tap import TapOpenAI
+
 
 class GPTEmbeddingMapper(BasicPassthroughMapper):
     """Split documents into segments, then vectorize."""
@@ -21,7 +19,12 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
     name = "map-openai-embeddings"
 
     def __init__(self, *args, **kwargs):
-        """Initialize the mapper."""
+        """Initialize the mapper.
+
+        Args:
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        """
         super().__init__(*args, **kwargs)
         self.tap = TapOpenAI(config=dict(self.config))
         self.stream = None
@@ -73,7 +76,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         Raises:
             ConfigValidationError: If raise_errors is True and validation fails.
         """
-        super()._validate_config(raise_errors, warnings_as_errors)
+        warnings, errors = super()._validate_config(raise_errors, warnings_as_errors)
         if (
             raise_errors
             and self.config.get("openai_api_key", None) is None
@@ -84,6 +87,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
                 f"`{self.name.upper().replace('-', '_')}_OPEN_API_KEY` env var, or "
                 " `OPENAI_API_KEY` env var."
             )
+        return warnings, errors
 
     def split_record(self, record: dict) -> t.Iterable[dict]:
         """Split a record dict to zero or more record dicts.
@@ -98,7 +102,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         metadata_dict = record[self.config["document_metadata_property"]]
 
         if not self.config.get("split_documents", True):
-            return record
+            yield record
 
         splitter_config = self.config.get("splitter_config", {})
         if "chunk_size" not in splitter_config:
@@ -140,6 +144,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             new_message["record"] = split_record
 
             yield t.cast(RecordMessage, RecordMessage.from_dict(new_message))
+
 
 if __name__ == "__main__":
     GPTEmbeddingMapper.cli()
