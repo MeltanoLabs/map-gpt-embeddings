@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "MeltanoLabs-singer-openai"
+name = "map-gpt-embeddings"
 version = "0.0.1"
-description = "`singer-openai` is a Singer library for Open AI, built with the Meltano Singer SDK."
+description = "`map-gpt-embeddings` is a Singer library for Open AI, built with the Meltano Singer SDK."
 readme = "README.md"
 authors = ["AJ Steers, Meltano"]
 keywords = [
@@ -15,7 +15,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "<3.12,>=3.8.1"
-singer-sdk = { version="^0.23.0" }
+singer-sdk = { version="^0.30.0" }
 fs-s3fs = { version = "^1.1.1", optional = true }
 beautifulsoup4 = "^4.12.1"
 openai = "^0.27.4"
@@ -29,7 +29,7 @@ black = "^23.1.0"
 pyupgrade = "^3.3.1"
 mypy = "^1.0.0"
 isort = "^5.11.5"
-singer-sdk = { version="^0.23.0", extras = ["testing"] }
+singer-sdk = { version="^0.30.0", extras = ["testing"] }
 
 [tool.poetry.extras]
 s3 = ["fs-s3fs"]

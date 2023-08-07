@@ -16,7 +16,7 @@ from map_gpt_embeddings.tap import TapOpenAI
 class GPTEmbeddingMapper(BasicPassthroughMapper):
     """Split documents into segments, then vectorize."""
 
-    name = "map-openai-embeddings"
+    name = "map-gpt-embeddings"
 
     def __init__(self, *args, **kwargs):
         """Initialize the mapper.
@@ -61,6 +61,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
 
     def _validate_config(
         self,
+        *,
         raise_errors: bool = True,
         warnings_as_errors: bool = False,
     ) -> tuple[list[str], list[str]]:
@@ -76,7 +77,9 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         Raises:
             ConfigValidationError: If raise_errors is True and validation fails.
         """
-        warnings, errors = super()._validate_config(raise_errors, warnings_as_errors)
+        warnings, errors = super()._validate_config(
+            raise_errors=raise_errors, warnings_as_errors=warnings_as_errors
+        )
         if (
             raise_errors
             and self.config.get("openai_api_key", None) is None
