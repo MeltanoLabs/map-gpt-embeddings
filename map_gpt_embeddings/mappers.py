@@ -16,7 +16,7 @@ from map_gpt_embeddings.tap import TapOpenAI
 class GPTEmbeddingMapper(BasicPassthroughMapper):
     """Split documents into segments, then vectorize."""
 
-    name = "map-openai-embeddings"
+    name = "map-gpt-embeddings"
 
     def __init__(self, *args, **kwargs):
         """Initialize the mapper.
