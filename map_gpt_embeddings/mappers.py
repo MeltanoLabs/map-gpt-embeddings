@@ -106,6 +106,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
 
         if not self.config.get("split_documents", True):
             yield record
+            return
 
         splitter_config = self.config.get("splitter_config", {})
         if "chunk_size" not in splitter_config:
