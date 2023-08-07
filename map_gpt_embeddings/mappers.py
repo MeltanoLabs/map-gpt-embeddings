@@ -45,11 +45,13 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             "document_text_property",
             th.StringType,
             default="page_content",
+            description="The name of the property containing the document text."
         ),
         th.Property(
             "document_metadata_property",
             th.StringType,
             default="metadata",
+            description="The name of the property containing the document metadata."
         ),
         th.Property(
             "openai_api_key",
