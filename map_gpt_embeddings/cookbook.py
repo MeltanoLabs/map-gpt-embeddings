@@ -19,9 +19,9 @@ Features:
 
 Example command to call script:
 ```
-python /Users/pnadolny/Documents/Git/GitHub/MeltanoLabs/map-gpt-embeddings/map_gpt_embeddings/cookbook.py \
-  --requests_filepath /Users/pnadolny/Documents/Git/GitHub/MeltanoLabs/map-gpt-embeddings/.secrets/requests.json \
-  --save_filepath /Users/pnadolny/Documents/Git/GitHub/MeltanoLabs/map-gpt-embeddings/.secrets/requests_output.jsonl \
+python examples/api_request_parallel_processor.py \
+  --requests_filepath examples/data/example_requests_to_parallel_process.jsonl \
+  --save_filepath examples/data/example_requests_to_parallel_process_results.jsonl \
   --request_url https://api.openai.com/v1/embeddings \
   --max_requests_per_minute 1500 \
   --max_tokens_per_minute 6250000 \
@@ -119,7 +119,6 @@ async def process_api_requests_from_file(
     token_encoding_name: str,
     max_attempts: int,
     logging_level: int,
-    # should_stop_processing,
 ):
     """Processes API requests in parallel, throttling to stay under rate limits."""
     # constants
@@ -237,7 +236,6 @@ async def process_api_requests_from_file(
 
                 # if all tasks are finished, break
                 if status_tracker.num_tasks_in_progress == 0:
-                # and should_stop_processing.is_set():
                     break
 
                 # main loop sleeps briefly so concurrent tasks can run
