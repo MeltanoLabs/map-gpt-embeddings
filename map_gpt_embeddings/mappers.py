@@ -59,6 +59,21 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             secret=True,
             description="OpenAI API key. Optional if `OPENAI_API_KEY` env var is set.",
         ),
+        th.Property(
+            "splitter_config",
+            th.ObjectType(),
+            description="Configuration for the text splitter.",
+            default={
+                "chunk_size": 1000,
+                "chunk_overlap": 200,
+            }
+        ),
+        th.Property(
+            "split_documents",
+            th.BooleanType,
+            description="Whether to split document into chunks.",
+            default=True,
+        ),
     ).to_dict()
 
     def _validate_config(
@@ -103,27 +118,21 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         Yields:
             A generator of record dicts.
         """
-        raw_document_text = record[self.config["document_text_property"]]
-        metadata_dict = record[self.config["document_metadata_property"]]
-
-        if not self.config.get("split_documents", True):
+        if not self.config["split_documents"]:
             yield record
             return
 
-        splitter_config = self.config.get("splitter_config", {})
-        if "chunk_size" not in splitter_config:
-            splitter_config["chunk_size"] = 1000
-        if "chunk_overlap" not in splitter_config:
-            splitter_config["chunk_overlap"] = 200
-        text_splitter = RecursiveCharacterTextSplitter(**splitter_config)
+        raw_document_text = record[self.config["document_text_property"]]
+        metadata_dict = record[self.config["document_metadata_property"]]
+
+        text_splitter = RecursiveCharacterTextSplitter(
+            **self.config["splitter_config"]
+        )
 
         document = Document(page_content=raw_document_text, metadata=metadata_dict)
 
         document_segments = text_splitter.split_documents([document])
 
-        # assert document_segments and len(
-        #     document_segments
-        # ), "No documents output from split."
         if len(document_segments) > 1:
             self.logger.debug("Document split into %s segments", len(document_segments))
         elif len(document_segments) == 1:

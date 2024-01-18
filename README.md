@@ -13,9 +13,11 @@ Built with the [Meltano Singer SDK](https://sdk.meltano.com).
 
 | Setting                   | Required | Default | Description |
 |:--------------------------|:--------:|:-------:|:------------|
-| document_text_property    | False    | page_content |             |
-| document_metadata_property| False    | metadata |             |
+| document_text_property    | False    | page_content | The name of the property containing the document text. |
+| document_metadata_property| False    | metadata | The name of the property containing the document metadata. |
 | openai_api_key            | False    | None    | OpenAI API key. Optional if `OPENAI_API_KEY` env var is set. |
+| splitter_config            | False    | { "chunk_size": 1000, "chunk_overlap": 200, }    | Configuration for the text splitter. |
+| split_documents            | False    | True    | Whether to split document into chunks. |
 | stream_maps               | False    | None    | Config object for stream maps capability. For more information check out [Stream Maps](https://sdk.meltano.com/en/latest/stream_maps.html). |
 | stream_map_config         | False    | None    | User-defined config values to be used within map expressions. |
 
