@@ -163,7 +163,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         # Add to async batch file
         for split_record in self.split_record(message_dict["record"]):
             with open(self.requests_filepath.name, "a") as file:
-                text = message_dict["record"]["page_content"]
+                text = message_dict["record"][self.config["document_text_property"]]
                 request = {
                     "input": text.replace("\n", " "),
                     "model":"text-embedding-ada-002",
