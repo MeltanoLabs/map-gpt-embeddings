@@ -9,10 +9,9 @@ from singer_sdk._singerlib.messages import (
     Message,
     SchemaMessage,
     StateMessage,
+    RecordMessage,
 )
 from singer_sdk.mapper_base import InlineMapper
-
-from map_gpt_embeddings.sdk_fixes.messages import RecordMessage
 
 
 class BasicPassthroughMapper(InlineMapper):

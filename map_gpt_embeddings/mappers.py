@@ -5,10 +5,9 @@ from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from singer_sdk import exceptions
 from singer_sdk import typing as th
-from singer_sdk._singerlib.messages import Message, SchemaMessage
+from singer_sdk._singerlib.messages import Message, SchemaMessage, RecordMessage
 
 from map_gpt_embeddings.sdk_fixes.mapper_base import BasicPassthroughMapper
-from map_gpt_embeddings.sdk_fixes.messages import RecordMessage
 from map_gpt_embeddings.stream import OpenAIStream
 from map_gpt_embeddings.tap import TapOpenAI
 
@@ -76,27 +75,19 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
         ),
     ).to_dict()
 
-    def _validate_config(
-        self,
-        *,
-        raise_errors: bool = True,
-        warnings_as_errors: bool = False,
-    ) -> tuple[list[str], list[str]]:
+    def _validate_config(self, *, raise_errors: bool = True) -> list[str]:
         """Validate configuration input against the plugin configuration JSON schema.
 
         Args:
             raise_errors: Flag to throw an exception if any validation errors are found.
-            warnings_as_errors: Flag to throw an exception if any warnings were emitted.
 
         Returns:
-            A tuple of configuration validation warnings and errors.
+            A list of validation errors.
 
         Raises:
             ConfigValidationError: If raise_errors is True and validation fails.
         """
-        warnings, errors = super()._validate_config(
-            raise_errors=raise_errors, warnings_as_errors=warnings_as_errors
-        )
+        errors = super()._validate_config(raise_errors=raise_errors)
         if (
             raise_errors
             and self.config.get("openai_api_key", None) is None
@@ -107,7 +98,8 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
                 f"`{self.name.upper().replace('-', '_')}_OPEN_API_KEY` env var, or "
                 " `OPENAI_API_KEY` env var."
             )
-        return warnings, errors
+
+        return errors
 
     def split_record(self, record: dict) -> t.Iterable[dict]:
         """Split a record dict to zero or more record dicts.
