@@ -1,15 +1,19 @@
+import asyncio
+import atexit
+import json
+import logging
 import os
+import tempfile
 import typing as t
 
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from singer_sdk import exceptions
 from singer_sdk import typing as th
-from singer_sdk._singerlib.messages import Message, SchemaMessage, RecordMessage
+from singer_sdk._singerlib.messages import Message, RecordMessage, SchemaMessage
 
+from map_gpt_embeddings.cookbook import process_api_requests_from_file
 from map_gpt_embeddings.sdk_fixes.mapper_base import BasicPassthroughMapper
-from map_gpt_embeddings.stream import OpenAIStream
-from map_gpt_embeddings.tap import TapOpenAI
 
 
 class GPTEmbeddingMapper(BasicPassthroughMapper):
@@ -25,8 +29,28 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             **kwargs: Arbitrary keyword arguments.
         """
         super().__init__(*args, **kwargs)
-        self.tap = TapOpenAI(config=dict(self.config))
         self.stream = None
+        self.requests_filepath = self._create_temp_file()
+        self.save_filepath = self._create_temp_file()
+        self.cursor_position = 0
+
+    def _create_temp_file(self) -> tempfile.NamedTemporaryFile:
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        temp_filename = temp_file.name
+        self.logger.info(f"Temporary file created: {temp_filename}")
+        atexit.register(self._delete_temp_file, temp_filename)
+        return temp_file
+
+    def _delete_temp_file(self, temp_filename) -> None:
+        try:
+            self.logger.info(f"Cleaning up: {temp_filename}")
+        finally:
+            os.remove(temp_filename)
+            self.logger.info(f"Temporary file deleted: {temp_filename}")
+
+    def _clear_file(self, file_path):
+        with open(file_path, 'w'):
+            pass
 
     def map_schema_message(self, message_dict: dict) -> t.Iterable[Message]:
         for result in t.cast(
@@ -36,7 +60,6 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             result.schema["properties"]["embeddings"] = th.ArrayType(
                 th.NumberType
             ).to_dict()
-            self.stream = OpenAIStream(tap=self.tap, schema=result.schema)
             yield result
 
     config_jsonschema = th.PropertiesList(
@@ -137,21 +160,43 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             yield new_record
 
     def map_record_message(self, message_dict: dict) -> t.Iterable[RecordMessage]:
+        # Add to async batch file
         for split_record in self.split_record(message_dict["record"]):
-            response_data = list(
-                self.stream.request_records(
-                    {
-                        "text": split_record[self.config["document_text_property"]],
-                        "model": "text-embedding-ada-002",
-                    }
+            with open(self.requests_filepath.name, "a") as file:
+                text = message_dict["record"][self.config["document_text_property"]]
+                request = {
+                    "input": text.replace("\n", " "),
+                    "model":"text-embedding-ada-002",
+                    "metadata": message_dict,
+                }
+                file.write(
+                    json.dumps(request)+ "\n"
+                )
+                self.cursor_position += 1
+        # Run async process and output batch results
+        if self.cursor_position >= 50:
+            self.cursor_position = 0
+            asyncio.run(
+                process_api_requests_from_file(
+                    self.requests_filepath.name,
+                    self.save_filepath.name,
+                    request_url="https://api.openai.com/v1/embeddings",
+                    api_key=self.config.get("openai_api_key", os.environ.get("OPENAI_API_KEY")),
+                    max_requests_per_minute=3_000 * 0.5,
+                    max_tokens_per_minute=1_000_000 * 0.5,
+                    token_encoding_name="cl100k_base",
+                    max_attempts=5,
+                    logging_level=logging.DEBUG,
                 )
             )
-            split_record["embeddings"] = response_data[0]["data"][0]["embedding"]
-            new_message = message_dict.copy()
-            new_message["record"] = split_record
-
-            yield t.cast(RecordMessage, RecordMessage.from_dict(new_message))
-
+            with open(self.save_filepath.name, "r") as file:
+                for response in file.readlines():
+                    response = json.loads(response)
+                    orig_message = response[2]
+                    orig_message["record"]["embeddings"] = response[1]["data"][0]["embedding"]
+                    yield t.cast(RecordMessage, RecordMessage.from_dict(orig_message))
+            self._clear_file(self.save_filepath.name)
+            self._clear_file(self.requests_filepath.name)
 
 if __name__ == "__main__":
     GPTEmbeddingMapper.cli()
