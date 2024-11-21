@@ -96,6 +96,24 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             description="Whether to split document into chunks.",
             default=True,
         ),
+        th.Property(
+            "embedding_model",
+            th.StringType,
+            description="The embedding model to use.",
+            default="text-embedding-ada-002",
+        ),
+        th.Property(
+            "max_requests_per_minute",
+            th.NumberType,
+            description="The embedding model to use.",
+            default=3_000 * 0.5,
+        ),
+        th.Property(
+            "max_tokens_per_minute",
+            th.NumberType,
+            description="The embedding model to use.",
+            default=1_000_000 * 0.5,
+        ),
     ).to_dict()
 
     def _validate_config(self, *, raise_errors: bool = True) -> list[str]:
@@ -166,7 +184,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
                 text = message_dict["record"][self.config["document_text_property"]]
                 request = {
                     "input": text.replace("\n", " "),
-                    "model":"text-embedding-ada-002",
+                    "model": self.config["embedding_model"],
                     "metadata": message_dict,
                 }
                 file.write(
@@ -182,8 +200,8 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
                     self.save_filepath.name,
                     request_url="https://api.openai.com/v1/embeddings",
                     api_key=self.config.get("openai_api_key", os.environ.get("OPENAI_API_KEY")),
-                    max_requests_per_minute=3_000 * 0.5,
-                    max_tokens_per_minute=1_000_000 * 0.5,
+                    max_requests_per_minute=self.config["max_requests_per_minute"],
+                    max_tokens_per_minute=self.config["max_tokens_per_minute"],
                     token_encoding_name="cl100k_base",
                     max_attempts=5,
                     logging_level=logging.DEBUG,
