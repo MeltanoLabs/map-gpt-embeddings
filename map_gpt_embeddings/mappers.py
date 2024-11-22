@@ -114,6 +114,17 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
             description="The embedding model to use.",
             default=1_000_000 * 0.5,
         ),
+        th.Property(
+            "request_batch_size",
+            th.NumberType,
+            description=(
+                "The mapper writes records to a temporary local file, then gives it to an OpenAI cookbook "
+                "script for parallel processing API requests to maximize throughput while handling rate limits. "
+                "This configurations sets the amount of records to write to the temp file prior executing "
+                "the script."
+            ),
+            default=50,
+        ),
     ).to_dict()
 
     def _validate_config(self, *, raise_errors: bool = True) -> list[str]:
@@ -192,7 +203,7 @@ class GPTEmbeddingMapper(BasicPassthroughMapper):
                 )
                 self.cursor_position += 1
         # Run async process and output batch results
-        if self.cursor_position >= 50:
+        if self.cursor_position >= self.config["request_batch_size"]:
             self.cursor_position = 0
             asyncio.run(
                 process_api_requests_from_file(
